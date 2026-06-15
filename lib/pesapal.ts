@@ -10,12 +10,19 @@ function getBase() {
 
 // Step 1: Get a bearer token (valid 5 minutes)
 export async function getPesapalToken(): Promise<string> {
+  const key = process.env.PESAPAL_CONSUMER_KEY?.trim();
+  const secret = process.env.PESAPAL_CONSUMER_SECRET?.trim();
+  
+  if (!key || !secret) {
+    throw new Error(`PesaPal credentials missing: key=${!!key}, secret=${!!secret}`);
+  }
+
   const res = await fetch(`${getBase()}/api/Auth/RequestToken`, {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      consumer_key: process.env.PESAPAL_CONSUMER_KEY,
-      consumer_secret: process.env.PESAPAL_CONSUMER_SECRET,
+      consumer_key: key,
+      consumer_secret: secret,
     }),
   });
   const data = await res.json();
