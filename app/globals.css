@@ -49,6 +49,7 @@ input, select, textarea { font-family: inherit; }
 .logo img { height: 40px; width: auto; }
 .nav-links { display: flex; gap: 1.5rem; flex: 1; }
 .nav-links a { color: rgba(255,255,255,0.85); font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+.nav-links a:first-child { font-size: 0.75rem; }
 .nav-links a:hover { color: var(--accent); }
 .nav-actions { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
 .cart-btn {
