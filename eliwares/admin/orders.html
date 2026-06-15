@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orders – ELIWARES Admin</title>
+<link rel="stylesheet" href="../src/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#4fc3f7"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#1a3c5e"/></svg>
+      ELIWARES Admin
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="products.html"><span class="nav-icon">📦</span> Products</a>
+      <a href="inventory.html"><span class="nav-icon">🏪</span> Inventory</a>
+      <a href="orders.html" class="active"><span class="nav-icon">🛒</span> Orders</a>
+      <a href="brands.html"><span class="nav-icon">🏷️</span> Brands</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../index.html">← View Store</a><br><br>
+      <a href="#" onclick="doLogout()" style="color:rgba(255,100,100,0.7)">Log Out</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar"><h2>Orders</h2></div>
+    <div class="admin-content">
+
+      <div class="admin-stats" id="orderStats"></div>
+
+      <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <select id="statusFilter" class="brand-select" onchange="renderOrders()">
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="payFilter" class="brand-select" onchange="renderOrders()">
+          <option value="all">All Payment Types</option>
+          <option value="mtn">MTN MoMo</option>
+          <option value="airtel">Airtel Money</option>
+          <option value="cash">Pay on Pickup</option>
+        </select>
+        <input type="search" id="orderSearch" placeholder="Search by name or order ID..." class="search-input" style="flex:1;min-width:200px" oninput="renderOrders()">
+      </div>
+
+      <div class="admin-table-wrap">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>MoMo Number</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="admin-modal-overlay hidden" id="orderDetailOverlay">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3>Order Details</h3>
+      <button onclick="closeOrderDetail()" class="close-btn">✕</button>
+    </div>
+    <div class="admin-modal-body" id="orderDetailBody"></div>
+    <div class="admin-modal-footer">
+      <button class="btn-sm ghost" onclick="closeOrderDetail()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="../src/data.js"></script>
+<script>
+  const auth = DB.checkAuth();
+  if (!auth) window.location.href = 'login.html';
+  function doLogout() { DB.logout(); window.location.href = 'login.html'; }
+
+  function init() {
+    const orders = DB.getOrders();
+    const pending = orders.filter(o => o.status==='pending').length;
+    const confirmed = orders.filter(o => o.status==='confirmed').length;
+    const delivered = orders.filter(o => o.status==='delivered').length;
+    const total = orders.reduce((s,o) => s + (o.total||0), 0);
+
+    document.getElementById('orderStats').innerHTML = `
+      <div class="a-stat"><div class="a-stat-label">Total Orders</div><div class="a-stat-num">${orders.length}</div></div>
+      <div class="a-stat"><div class="a-stat-label">Pending</div><div class="a-stat-num" style="color:#d97706">${pending}</div><div class="a-stat-sub">awaiting action</div></div>
+      <div class="a-stat"><div class="a-stat-label">Confirmed</div><div class="a-stat-num" style="color:#16a34a">${confirmed}</div></div>
+      <div class="a-stat"><div class="a-stat-label">Total Revenue</div><div class="a-stat-num">${fmtPrice(total)}</div></div>
+    `;
+    renderOrders();
+  }
+
+  function renderOrders() {
+    const statusF = document.getElementById('statusFilter').value;
+    const payF = document.getElementById('payFilter').value;
+    const search = document.getElementById('orderSearch').value.toLowerCase();
+    let orders = DB.getOrders();
+    if (statusF !== 'all') orders = orders.filter(o => o.status === statusF);
+    if (payF !== 'all') orders = orders.filter(o => o.payment?.method === payF);
+    if (search) orders = orders.filter(o =>
+      o.id?.toLowerCase().includes(search) ||
+      o.customer?.name?.toLowerCase().includes(search) ||
+      o.customer?.phone?.includes(search)
+    );
+
+    const body = document.getElementById('ordersTableBody');
+    if (!orders.length) { body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#888;padding:2rem">No orders found</td></tr>'; return; }
+
+    body.innerHTML = orders.map(o => {
+      const itemCount = o.items?.reduce((s,i) => s + i.qty, 0) || 0;
+      const payLabel = o.payment?.method === 'mtn' ? 'MTN MoMo' : o.payment?.method === 'airtel' ? 'Airtel' : 'Pickup';
+      return `<tr>
+        <td style="font-family:monospace;font-weight:700;font-size:0.82rem">${o.id}</td>
+        <td style="font-size:0.8rem;color:#888">${new Date(o.createdAt).toLocaleString()}</td>
+        <td><b>${o.customer?.name||'—'}</b><br><span style="font-size:0.75rem;color:#888">${o.customer?.phone||''}</span></td>
+        <td>${itemCount} item${itemCount!==1?'s':''}</td>
+        <td style="font-weight:700">${fmtPrice(o.total)}</td>
+        <td>${payLabel}</td>
+        <td style="font-family:monospace;font-size:0.8rem">${o.payment?.momoNumber||'—'}</td>
+        <td>
+          <select class="brand-select" style="font-size:0.8rem;padding:4px 8px" onchange="updateStatus('${o.id}',this.value)">
+            ${['pending','confirmed','delivered','cancelled'].map(s =>
+              `<option value="${s}" ${o.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`
+            ).join('')}
+          </select>
+        </td>
+        <td><button class="btn-sm ghost" onclick="viewOrder('${o.id}')">Details</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function updateStatus(id, status) {
+    DB.updateOrderStatus(id, status);
+    init();
+  }
+
+  function viewOrder(id) {
+    const o = DB.getOrders().find(x => x.id === id);
+    if (!o) return;
+    const payLabel = o.payment?.method === 'mtn' ? 'MTN Mobile Money' : o.payment?.method === 'airtel' ? 'Airtel Money' : 'Pay on Pickup';
+    document.getElementById('orderDetailBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;background:#f7f8fa;padding:1rem;border-radius:10px;margin-bottom:1rem">
+        <div><p style="font-size:0.75rem;color:#888;font-weight:600;text-transform:uppercase">Order ID</p><p style="font-family:monospace;font-weight:700">${o.id}</p></div>
+        <div><p style="font-size:0.75rem;color:#888;font-weight:600;text-transform:uppercase">Date</p><p>${new Date(o.createdAt).toLocaleString()}</p></div>
+        <div><p style="font-size:0.75rem;color:#888;font-weight:600;text-transform:uppercase">Customer</p><p style="font-weight:600">${o.customer?.name}</p><p style="font-size:0.82rem;color:#888">${o.customer?.phone}</p></div>
+        <div><p style="font-size:0.75rem;color:#888;font-weight:600;text-transform:uppercase">Address</p><p style="font-size:0.88rem">${o.customer?.address||'—'}</p></div>
+        <div><p style="font-size:0.75rem;color:#888;font-weight:600;text-transform:uppercase">Payment</p><p>${payLabel}</p>${o.payment?.momoNumber?`<p style="font-family:monospace;font-size:0.85rem;color:#1a3c5e">${o.payment.momoNumber}</p>`:''}</div>
+        <div><p style="font-size:0.75rem;color:#888;font-weight:600;text-transform:uppercase">Status</p><span class="order-badge order-${o.status||'pending'}">${o.status||'pending'}</span></div>
+      </div>
+      ${o.customer?.notes ? `<div style="background:#fef9e7;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.85rem"><b>Note:</b> ${o.customer.notes}</div>` : ''}
+      <h4 style="margin-bottom:0.75rem;font-size:0.9rem">Order Items</h4>
+      ${(o.items||[]).map(i => `
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e4e8ee;align-items:center">
+          <div><p style="font-weight:600;font-size:0.9rem">${i.name}</p><p style="font-size:0.78rem;color:#888">${i.brand} – ${i.qty}× ${fmtPrice(i.price)}</p></div>
+          <p style="font-weight:700">${fmtPrice(i.price*i.qty)}</p>
+        </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding:1rem 0;font-size:1.1rem;font-weight:800;color:#1a3c5e">
+        <span>Total</span><span>${fmtPrice(o.total)}</span>
+      </div>`;
+    document.getElementById('orderDetailOverlay').classList.remove('hidden');
+  }
+
+  function closeOrderDetail() { document.getElementById('orderDetailOverlay').classList.add('hidden'); }
+
+  init();
+</script>
+</body>
+</html>

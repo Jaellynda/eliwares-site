@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory – ELIWARES Admin</title>
+<link rel="stylesheet" href="../src/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#4fc3f7"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#1a3c5e"/></svg>
+      ELIWARES Admin
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="products.html"><span class="nav-icon">📦</span> Products</a>
+      <a href="inventory.html" class="active"><span class="nav-icon">🏪</span> Inventory</a>
+      <a href="orders.html"><span class="nav-icon">🛒</span> Orders</a>
+      <a href="brands.html"><span class="nav-icon">🏷️</span> Brands</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../index.html">← View Store</a><br><br>
+      <a href="#" onclick="doLogout()" style="color:rgba(255,100,100,0.7)">Log Out</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h2>Inventory</h2>
+      <div style="display:flex;gap:0.75rem">
+        <button class="btn-sm primary" onclick="openStockUpdate()">+ Update Stock</button>
+      </div>
+    </div>
+    <div class="admin-content">
+
+      <!-- SUMMARY CARDS -->
+      <div class="admin-stats" id="invStats"></div>
+
+      <!-- BRAND VIEW TABS -->
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem" id="brandTabs"></div>
+
+      <!-- INVENTORY TABLE -->
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <h3 id="invTableTitle">All Products – Inventory</h3>
+          <div style="display:flex;gap:0.75rem">
+            <input type="search" id="invSearch" placeholder="Search..." class="search-input" oninput="renderInv()" style="width:200px">
+            <select id="invCatFilter" class="brand-select" onchange="renderInv()">
+              <option value="all">All Categories</option>
+              <option value="tiles">Tiles</option>
+              <option value="toilets">Toilets</option>
+              <option value="sinks">Sinks</option>
+              <option value="taps">Taps</option>
+              <option value="fixtures">Fixtures</option>
+              <option value="showers">Showers</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Brand</th>
+                <th>Category</th>
+                <th>Shop Stock</th>
+                <th>Storage Stock</th>
+                <th>Total</th>
+                <th>Min Alert</th>
+                <th>Sold</th>
+                <th>Status</th>
+                <th>Quick Update</th>
+              </tr>
+            </thead>
+            <tbody id="invTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SALES LOG -->
+      <div class="admin-table-wrap" style="margin-top:2rem">
+        <div class="admin-table-header">
+          <h3>Sales Log</h3>
+          <select id="salesLogProduct" class="brand-select" onchange="renderSalesLog()">
+            <option value="all">All Products</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Date</th><th>Product</th><th>Brand</th><th>Qty Sold</th><th>Order Ref</th></tr></thead>
+            <tbody id="salesLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- STOCK UPDATE MODAL -->
+<div class="admin-modal-overlay hidden" id="stockModalOverlay">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3>Update Stock</h3>
+      <button onclick="closeStockModal()" class="close-btn">✕</button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="form-group">
+        <label>Select Product</label>
+        <select id="sm_product" onchange="loadStockProduct()"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Shop Quantity</label>
+          <input type="number" id="sm_shop" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Storage Quantity</label>
+          <input type="number" id="sm_storage" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Min Stock Alert</label>
+          <input type="number" id="sm_min" min="0" value="5">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="sm_status">
+            <option value="available">In Stock</option>
+            <option value="out_of_stock">Out of Stock</option>
+            <option value="coming_soon">Coming Soon</option>
+          </select>
+        </div>
+      </div>
+      <div style="background:#f0f9ff;padding:1rem;border-radius:8px;font-size:0.85rem;color:#0369a1">
+        ℹ️ Use this to manually adjust stock levels after receiving new shipments or conducting stock takes.
+      </div>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-sm ghost" onclick="closeStockModal()">Cancel</button>
+      <button class="btn-sm primary" onclick="saveStock()">Save Stock</button>
+    </div>
+  </div>
+</div>
+
+<script src="../src/data.js"></script>
+<script>
+  const auth = DB.checkAuth();
+  if (!auth) window.location.href = 'login.html';
+  function doLogout() { DB.logout(); window.location.href = 'login.html'; }
+
+  let currentBrandFilter = 'all';
+
+  function init() {
+    const products = DB.getProducts();
+    const totalStock = products.reduce((s,p) => s + (p.shopQty||0) + (p.storageQty||0), 0);
+    const lowStock = products.filter(p => { const t=(p.shopQty||0)+(p.storageQty||0); return t<=p.minStockAlert && t>0; }).length;
+    const oos = products.filter(p => p.status==='out_of_stock').length;
+    const totalSold = products.reduce((s,p) => s + (p.soldCount||0), 0);
+
+    document.getElementById('invStats').innerHTML = `
+      <div class="a-stat"><div class="a-stat-label">Total Stock Units</div><div class="a-stat-num">${totalStock}</div><div class="a-stat-sub">across shop + storage</div></div>
+      <div class="a-stat"><div class="a-stat-label">Low Stock Items</div><div class="a-stat-num" style="color:#d97706">${lowStock}</div><div class="a-stat-sub">below alert threshold</div></div>
+      <div class="a-stat"><div class="a-stat-label">Out of Stock</div><div class="a-stat-num" style="color:#dc2626">${oos}</div><div class="a-stat-sub">need restocking</div></div>
+      <div class="a-stat"><div class="a-stat-label">Total Units Sold</div><div class="a-stat-num">${totalSold}</div><div class="a-stat-sub">all time</div></div>
+    `;
+
+    // Brand tabs
+    const brands = DB.getBrands();
+    document.getElementById('brandTabs').innerHTML =
+      `<button class="filter-tab active" onclick="setBrandFilter('all',this)">All Brands</button>` +
+      brands.map(b => `<button class="filter-tab" onclick="setBrandFilter('${b.name}',this)">${b.name}</button>`).join('');
+
+    // Sales log product filter
+    const sl = document.getElementById('salesLogProduct');
+    sl.innerHTML = '<option value="all">All Products</option>' +
+      products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+    renderInv();
+    renderSalesLog();
+  }
+
+  function setBrandFilter(brand, btn) {
+    currentBrandFilter = brand;
+    document.querySelectorAll('#brandTabs .filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('invTableTitle').textContent = brand === 'all' ? 'All Products – Inventory' : brand + ' – Inventory';
+    renderInv();
+  }
+
+  function renderInv() {
+    const search = document.getElementById('invSearch').value.toLowerCase();
+    const cat = document.getElementById('invCatFilter').value;
+    let products = DB.getProducts();
+    if (currentBrandFilter !== 'all') products = products.filter(p => p.brand === currentBrandFilter);
+    if (cat !== 'all') products = products.filter(p => p.category === cat);
+    if (search) products = products.filter(p => p.name.toLowerCase().includes(search) || p.sku?.toLowerCase().includes(search));
+
+    const body = document.getElementById('invTableBody');
+    if (!products.length) { body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#888;padding:2rem">No products</td></tr>'; return; }
+
+    body.innerHTML = products.map(p => {
+      const total = (p.shopQty||0) + (p.storageQty||0);
+      const stockCls = total === 0 ? 'stock-zero' : total <= (p.minStockAlert||5) ? 'stock-low' : 'stock-ok';
+      const st = STATUS_LABELS[p.status] || STATUS_LABELS.available;
+      return `<tr>
+        <td style="font-weight:600">${p.name}<br><span style="font-size:0.72rem;color:#888;font-family:monospace">${p.sku||''}</span></td>
+        <td>${p.brand}</td>
+        <td style="text-transform:capitalize">${p.category}</td>
+        <td><b>${p.shopQty||0}</b></td>
+        <td><b>${p.storageQty||0}</b></td>
+        <td><span class="stock-badge ${stockCls}">${total}</span></td>
+        <td>${p.minStockAlert||5}</td>
+        <td>${p.soldCount||0}</td>
+        <td><span class="product-status ${st.cls}" style="position:static">${st.label}</span></td>
+        <td>
+          <button class="btn-sm primary" onclick="quickStock('${p.id}')">Update</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderSalesLog() {
+    const pid = document.getElementById('salesLogProduct').value;
+    const products = DB.getProducts();
+    let entries = [];
+    products.forEach(p => {
+      if (pid !== 'all' && p.id !== pid) return;
+      (p.salesLog || []).forEach(log => {
+        entries.push({ ...log, productName: p.name, brand: p.brand });
+      });
+    });
+    entries.sort((a,b) => new Date(b.date) - new Date(a.date));
+    const body = document.getElementById('salesLogBody');
+    if (!entries.length) { body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:2rem">No sales recorded yet</td></tr>'; return; }
+    body.innerHTML = entries.slice(0, 50).map(e => `<tr>
+      <td>${new Date(e.date).toLocaleString()}</td>
+      <td style="font-weight:600">${e.productName}</td>
+      <td>${e.brand}</td>
+      <td>${e.qty}</td>
+      <td style="font-family:monospace;font-size:0.8rem">${e.orderRef||'—'}</td>
+    </tr>`).join('');
+  }
+
+  function openStockUpdate() {
+    const products = DB.getProducts();
+    document.getElementById('sm_product').innerHTML = products.map(p => `<option value="${p.id}">${p.name} (${p.brand})</option>`).join('');
+    loadStockProduct();
+    document.getElementById('stockModalOverlay').classList.remove('hidden');
+  }
+
+  function quickStock(id) {
+    openStockUpdate();
+    document.getElementById('sm_product').value = id;
+    loadStockProduct();
+  }
+
+  function loadStockProduct() {
+    const id = document.getElementById('sm_product').value;
+    const p = DB.getProducts().find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('sm_shop').value = p.shopQty || 0;
+    document.getElementById('sm_storage').value = p.storageQty || 0;
+    document.getElementById('sm_min').value = p.minStockAlert || 5;
+    document.getElementById('sm_status').value = p.status;
+  }
+
+  function closeStockModal() { document.getElementById('stockModalOverlay').classList.add('hidden'); }
+
+  function saveStock() {
+    const id = document.getElementById('sm_product').value;
+    const shopQty = parseInt(document.getElementById('sm_shop').value) || 0;
+    const storageQty = parseInt(document.getElementById('sm_storage').value) || 0;
+    const minStockAlert = parseInt(document.getElementById('sm_min').value) || 5;
+    const status = document.getElementById('sm_status').value;
+    DB.updateProduct(id, { shopQty, storageQty, minStockAlert, status });
+    closeStockModal();
+    init();
+  }
+
+  init();
+</script>
+</body>
+</html>

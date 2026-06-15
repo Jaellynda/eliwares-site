@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELIWARES – Premium Bathroom Hardware</title>
+<link rel="stylesheet" href="src/style.css">
+<link rel="icon" href="public/icons/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1a3c5e"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#4fc3f7"/></svg>
+      <span>ELIWARES</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#products">Products</a>
+      <a href="#brands">Brands</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="cart-btn" onclick="openCart()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <a href="admin/login.html" class="admin-link">Admin</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Uganda's Premium Bathroom Store</p>
+    <h1>Tiles. Toilets.<br>Fixtures. Done Right.</h1>
+    <p class="hero-sub">Quality bathroom hardware with warranty, delivered to your door. Order directly with MTN or Airtel Money.</p>
+    <div class="hero-actions">
+      <a href="#products" class="btn btn-primary">Shop Now</a>
+      <a href="#contact" class="btn btn-outline">Get a Quote</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-tiles">
+      <div class="tile-card tc1"><div class="tile-icon">🚿</div><span>Showers</span></div>
+      <div class="tile-card tc2"><div class="tile-icon">🚽</div><span>Toilets</span></div>
+      <div class="tile-card tc3"><div class="tile-icon">🪣</div><span>Sinks</span></div>
+      <div class="tile-card tc4"><div class="tile-icon">🔩</div><span>Fixtures</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTERS -->
+<section class="filters-bar" id="products">
+  <div class="filters-inner">
+    <div class="filter-tabs" id="categoryTabs">
+      <button class="filter-tab active" data-cat="all">All Products</button>
+      <button class="filter-tab" data-cat="tiles">Tiles</button>
+      <button class="filter-tab" data-cat="toilets">Toilets</button>
+      <button class="filter-tab" data-cat="sinks">Sinks</button>
+      <button class="filter-tab" data-cat="taps">Taps &amp; Mixers</button>
+      <button class="filter-tab" data-cat="fixtures">Fixtures</button>
+      <button class="filter-tab" data-cat="showers">Showers</button>
+    </div>
+    <div class="filter-right">
+      <input type="search" id="searchInput" placeholder="Search products..." class="search-input">
+      <select id="brandFilter" class="brand-select">
+        <option value="all">All Brands</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS GRID -->
+<section class="products-section">
+  <div class="products-grid" id="productsGrid">
+    <!-- injected by JS -->
+  </div>
+  <div class="no-results hidden" id="noResults">
+    <p>No products found. Try a different filter or search.</p>
+  </div>
+</section>
+
+<!-- BRANDS -->
+<section class="brands-section" id="brands">
+  <div class="section-inner">
+    <h2 class="section-title">Brands We Carry</h2>
+    <div class="brands-grid" id="brandsGrid"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="section-inner about-inner">
+    <div class="about-text">
+      <h2>Why ELIWARES?</h2>
+      <p>We've been supplying premium bathroom hardware across Uganda since 2015. Every product comes with a manufacturer warranty, and our team is on hand to help you pick the right fixtures for your project.</p>
+      <ul class="about-list">
+        <li>✓ All products carry manufacturer warranty</li>
+        <li>✓ Order with MTN or Airtel Mobile Money</li>
+        <li>✓ In-stock items dispatched same day</li>
+        <li>✓ Bulk pricing for contractors &amp; developers</li>
+      </ul>
+    </div>
+    <div class="about-stats">
+      <div class="stat-card"><span class="stat-num">500+</span><span class="stat-label">Products</span></div>
+      <div class="stat-card"><span class="stat-num">50+</span><span class="stat-label">Brands</span></div>
+      <div class="stat-card"><span class="stat-num">2,000+</span><span class="stat-label">Customers</span></div>
+      <div class="stat-card"><span class="stat-num">9yrs</span><span class="stat-label">Experience</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="section-inner">
+    <h2 class="section-title">Get in Touch</h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-item"><span class="ci-label">📍 Address</span><span>Plot 14, Industrial Area, Kampala, Uganda</span></div>
+        <div class="contact-item"><span class="ci-label">📞 Phone</span><span>+256 700 000000</span></div>
+        <div class="contact-item"><span class="ci-label">📧 Email</span><span>info@eliwares.ug</span></div>
+        <div class="contact-item"><span class="ci-label">⏰ Hours</span><span>Mon–Sat: 8am – 6pm</span></div>
+      </div>
+      <form class="contact-form" onsubmit="submitContact(event)">
+        <input type="text" placeholder="Your Name" required>
+        <input type="tel" placeholder="Phone Number" required>
+        <input type="email" placeholder="Email (optional)">
+        <textarea placeholder="Your message or inquiry..." rows="4" required></textarea>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1a3c5e"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#4fc3f7"/></svg>
+      <span>ELIWARES</span>
+    </div>
+    <p class="footer-copy">© 2025 ELIWARES Uganda. Premium Bathroom Hardware.</p>
+    <a href="admin/login.html" class="footer-admin">Admin Login</a>
+  </div>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="overlay hidden" id="overlay" onclick="closeCart()"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h3>Your Cart</h3>
+    <button onclick="closeCart()" class="close-btn">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter"></div>
+</aside>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay hidden" id="checkoutOverlay">
+  <div class="modal" id="checkoutModal">
+    <div class="modal-header">
+      <h3>Place Your Order</h3>
+      <button onclick="closeCheckout()" class="close-btn">✕</button>
+    </div>
+    <div class="modal-body" id="checkoutBody">
+      <div class="checkout-step" id="step1">
+        <h4>Your Details</h4>
+        <input type="text" id="co_name" placeholder="Full Name" required>
+        <input type="tel" id="co_phone" placeholder="Phone Number" required>
+        <input type="text" id="co_address" placeholder="Delivery Address / Area" required>
+        <textarea id="co_notes" placeholder="Any special notes?" rows="2"></textarea>
+        <h4 style="margin-top:1.5rem">Payment Method</h4>
+        <div class="payment-options">
+          <label class="payment-opt">
+            <input type="radio" name="payment" value="mtn"> 
+            <span class="pay-badge mtn">MTN MoMo</span>
+          </label>
+          <label class="payment-opt">
+            <input type="radio" name="payment" value="airtel">
+            <span class="pay-badge airtel">Airtel Money</span>
+          </label>
+          <label class="payment-opt">
+            <input type="radio" name="payment" value="cash">
+            <span class="pay-badge cash">Pay on Pickup</span>
+          </label>
+        </div>
+        <div class="momo-number hidden" id="momoField">
+          <input type="tel" id="co_momo" placeholder="Enter Mobile Money Number">
+        </div>
+        <div class="order-summary" id="checkoutSummary"></div>
+        <button class="btn btn-primary" onclick="submitOrder()" style="width:100%;margin-top:1rem">Confirm Order</button>
+      </div>
+      <div class="checkout-step hidden" id="step2">
+        <div class="order-success">
+          <div class="success-icon">✓</div>
+          <h3>Order Placed!</h3>
+          <p id="orderConfirmMsg"></p>
+          <p class="success-note">Our team will call you to confirm and arrange delivery or pickup.</p>
+          <button class="btn btn-outline" onclick="closeCheckout()">Continue Shopping</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay hidden" id="productOverlay">
+  <div class="modal modal-product" id="productModal">
+    <button onclick="closeProduct()" class="close-btn modal-close-top">✕</button>
+    <div id="productModalContent"></div>
+  </div>
+</div>
+
+<script src="src/data.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

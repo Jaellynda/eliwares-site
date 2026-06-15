@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products – ELIWARES Admin</title>
+<link rel="stylesheet" href="../src/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#4fc3f7"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#1a3c5e"/></svg>
+      ELIWARES Admin
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="products.html" class="active"><span class="nav-icon">📦</span> Products</a>
+      <a href="inventory.html"><span class="nav-icon">🏪</span> Inventory</a>
+      <a href="orders.html"><span class="nav-icon">🛒</span> Orders</a>
+      <a href="brands.html"><span class="nav-icon">🏷️</span> Brands</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../index.html">← View Store</a><br><br>
+      <a href="#" onclick="doLogout()" style="color:rgba(255,100,100,0.7)">Log Out</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h2>Products</h2>
+      <button class="btn-sm primary" onclick="openAddProduct()">+ Add Product</button>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <input type="search" id="searchP" placeholder="Search products..." class="search-input" style="flex:1;min-width:200px" oninput="renderTable()">
+        <select id="filterCat" class="brand-select" onchange="renderTable()">
+          <option value="all">All Categories</option>
+          <option value="tiles">Tiles</option>
+          <option value="toilets">Toilets</option>
+          <option value="sinks">Sinks</option>
+          <option value="taps">Taps</option>
+          <option value="fixtures">Fixtures</option>
+          <option value="showers">Showers</option>
+        </select>
+        <select id="filterStatus" class="brand-select" onchange="renderTable()">
+          <option value="all">All Statuses</option>
+          <option value="available">In Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
+          <option value="coming_soon">Coming Soon</option>
+        </select>
+      </div>
+      <div class="admin-table-wrap">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>SKU</th><th>Name</th><th>Brand</th><th>Category</th><th>Price</th><th>Status</th><th>Stock</th><th>Warranty</th><th>Sold</th><th>Actions</th></tr></thead>
+            <tbody id="productsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="admin-modal-overlay hidden" id="productModalOverlay">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3 id="modalTitle">Add Product</h3>
+      <button onclick="closeModal()" class="close-btn">✕</button>
+    </div>
+    <div class="admin-modal-body">
+      <input type="hidden" id="f_id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="f_name" placeholder="e.g. Marble Floor Tile" required>
+        </div>
+        <div class="form-group">
+          <label>SKU *</label>
+          <input type="text" id="f_sku" placeholder="e.g. CER-MBL-001">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="f_category">
+            <option value="tiles">Tiles</option>
+            <option value="toilets">Toilets</option>
+            <option value="sinks">Sinks</option>
+            <option value="taps">Taps & Mixers</option>
+            <option value="fixtures">Fixtures</option>
+            <option value="showers">Showers</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Brand *</label>
+          <select id="f_brand"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (UGX) *</label>
+          <input type="number" id="f_price" placeholder="e.g. 85000" min="0">
+        </div>
+        <div class="form-group">
+          <label>Unit</label>
+          <input type="text" id="f_unit" placeholder="e.g. each / per sqm">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="f_description" rows="3" placeholder="Describe the product..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="f_status">
+            <option value="available">In Stock</option>
+            <option value="out_of_stock">Out of Stock</option>
+            <option value="coming_soon">Coming Soon</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Warranty</label>
+          <input type="text" id="f_warranty" placeholder="e.g. 2 years">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Shop Quantity</label>
+          <input type="number" id="f_shopQty" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Storage Quantity</label>
+          <input type="number" id="f_storageQty" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Min Stock Alert</label>
+          <input type="number" id="f_minStock" min="0" value="5">
+        </div>
+        <div class="form-group">
+          <label>Image URL</label>
+          <input type="url" id="f_image" placeholder="https://...">
+        </div>
+      </div>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-sm ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-sm primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<script src="../src/data.js"></script>
+<script>
+  const auth = DB.checkAuth();
+  if (!auth) window.location.href = 'login.html';
+  function doLogout() { DB.logout(); window.location.href = 'login.html'; }
+
+  function renderTable() {
+    const search = document.getElementById('searchP').value.toLowerCase();
+    const cat = document.getElementById('filterCat').value;
+    const status = document.getElementById('filterStatus').value;
+    let products = DB.getProducts();
+    if (cat !== 'all') products = products.filter(p => p.category === cat);
+    if (status !== 'all') products = products.filter(p => p.status === status);
+    if (search) products = products.filter(p => p.name.toLowerCase().includes(search) || p.sku?.toLowerCase().includes(search) || p.brand.toLowerCase().includes(search));
+
+    const body = document.getElementById('productsTableBody');
+    if (!products.length) { body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#888;padding:2rem">No products found</td></tr>'; return; }
+
+    body.innerHTML = products.map(p => {
+      const st = STATUS_LABELS[p.status] || STATUS_LABELS.available;
+      const totalStock = (p.shopQty || 0) + (p.storageQty || 0);
+      let stockCls = totalStock === 0 ? 'stock-zero' : totalStock <= (p.minStockAlert || 5) ? 'stock-low' : 'stock-ok';
+      return `<tr>
+        <td style="font-family:monospace;font-size:0.8rem">${p.sku || '—'}</td>
+        <td style="font-weight:600;max-width:180px">${p.name}</td>
+        <td>${p.brand}</td>
+        <td style="text-transform:capitalize">${p.category}</td>
+        <td style="font-weight:700">${fmtPrice(p.price)}<br><span style="font-size:0.73rem;color:#888">/${p.unit}</span></td>
+        <td><span class="product-status ${st.cls}" style="position:static">${st.label}</span></td>
+        <td><span class="stock-badge ${stockCls}">${totalStock} units</span><br><span style="font-size:0.73rem;color:#888">Shop:${p.shopQty||0} / Store:${p.storageQty||0}</span></td>
+        <td>${p.warranty || '—'}</td>
+        <td>${p.soldCount || 0}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-sm primary" onclick="editProduct('${p.id}')">Edit</button>
+          <button class="btn-sm danger" onclick="deleteProduct('${p.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function populateBrandSelect() {
+    const sel = document.getElementById('f_brand');
+    sel.innerHTML = DB.getBrands().map(b => `<option value="${b.name}">${b.name}</option>`).join('');
+  }
+
+  function openAddProduct() {
+    document.getElementById('modalTitle').textContent = 'Add Product';
+    document.getElementById('f_id').value = '';
+    ['f_name','f_sku','f_description','f_warranty','f_image','f_unit'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f_price').value = '';
+    document.getElementById('f_shopQty').value = '0';
+    document.getElementById('f_storageQty').value = '0';
+    document.getElementById('f_minStock').value = '5';
+    document.getElementById('f_status').value = 'available';
+    populateBrandSelect();
+    document.getElementById('productModalOverlay').classList.remove('hidden');
+  }
+
+  function editProduct(id) {
+    const p = DB.getProducts().find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modalTitle').textContent = 'Edit Product';
+    document.getElementById('f_id').value = p.id;
+    document.getElementById('f_name').value = p.name;
+    document.getElementById('f_sku').value = p.sku || '';
+    document.getElementById('f_description').value = p.description;
+    document.getElementById('f_price').value = p.price;
+    document.getElementById('f_unit').value = p.unit;
+    document.getElementById('f_warranty').value = p.warranty || '';
+    document.getElementById('f_shopQty').value = p.shopQty || 0;
+    document.getElementById('f_storageQty').value = p.storageQty || 0;
+    document.getElementById('f_minStock').value = p.minStockAlert || 5;
+    document.getElementById('f_status').value = p.status;
+    document.getElementById('f_image').value = p.image || '';
+    populateBrandSelect();
+    document.getElementById('f_brand').value = p.brand;
+    document.getElementById('f_category').value = p.category;
+    document.getElementById('productModalOverlay').classList.remove('hidden');
+  }
+
+  function closeModal() { document.getElementById('productModalOverlay').classList.add('hidden'); }
+
+  function saveProduct() {
+    const id = document.getElementById('f_id').value;
+    const data = {
+      name: document.getElementById('f_name').value.trim(),
+      sku: document.getElementById('f_sku').value.trim(),
+      category: document.getElementById('f_category').value,
+      brand: document.getElementById('f_brand').value,
+      description: document.getElementById('f_description').value.trim(),
+      price: parseInt(document.getElementById('f_price').value) || 0,
+      unit: document.getElementById('f_unit').value.trim() || 'each',
+      warranty: document.getElementById('f_warranty').value.trim(),
+      shopQty: parseInt(document.getElementById('f_shopQty').value) || 0,
+      storageQty: parseInt(document.getElementById('f_storageQty').value) || 0,
+      minStockAlert: parseInt(document.getElementById('f_minStock').value) || 5,
+      status: document.getElementById('f_status').value,
+      image: document.getElementById('f_image').value.trim()
+    };
+    if (!data.name || !data.price) { alert('Please fill in Name and Price.'); return; }
+    if (id) DB.updateProduct(id, data);
+    else DB.addProduct(data);
+    closeModal();
+    renderTable();
+  }
+
+  function deleteProduct(id) {
+    if (!confirm('Delete this product? This cannot be undone.')) return;
+    DB.deleteProduct(id);
+    renderTable();
+  }
+
+  renderTable();
+</script>
+</body>
+</html>

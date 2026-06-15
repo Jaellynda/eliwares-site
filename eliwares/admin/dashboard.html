@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – ELIWARES Admin</title>
+<link rel="stylesheet" href="../src/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#4fc3f7"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#1a3c5e"/></svg>
+      ELIWARES Admin
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="active"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="products.html"><span class="nav-icon">📦</span> Products</a>
+      <a href="inventory.html"><span class="nav-icon">🏪</span> Inventory</a>
+      <a href="orders.html"><span class="nav-icon">🛒</span> Orders</a>
+      <a href="brands.html"><span class="nav-icon">🏷️</span> Brands</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../index.html">← View Store</a><br><br>
+      <a href="#" onclick="doLogout()" style="color:rgba(255,100,100,0.7)">Log Out</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h2>Dashboard</h2>
+      <span style="font-size:0.85rem;color:#888" id="adminUser"></span>
+    </div>
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="admin-stats" id="dashStats"></div>
+
+      <!-- ALERTS -->
+      <div id="stockAlerts" style="margin-bottom:2rem"></div>
+
+      <!-- RECENT ORDERS -->
+      <div class="admin-table-wrap" style="margin-bottom:2rem">
+        <div class="admin-table-header">
+          <h3>Recent Orders</h3>
+          <a href="orders.html" style="font-size:0.85rem;color:#1a3c5e;font-weight:600">View all →</a>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="recentOrdersTable">
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="recentOrdersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TOP PRODUCTS -->
+      <div class="admin-table-wrap">
+        <div class="admin-table-header"><h3>Top Selling Products</h3></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Sold</th><th>Revenue</th></tr></thead>
+            <tbody id="topProductsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../src/data.js"></script>
+<script>
+  const auth = DB.checkAuth();
+  if (!auth) window.location.href = 'login.html';
+  document.getElementById('adminUser').textContent = 'Logged in as: ' + auth.username;
+
+  function doLogout() { DB.logout(); window.location.href = 'login.html'; }
+
+  function init() {
+    const products = DB.getProducts();
+    const orders = DB.getOrders();
+    const totalProducts = products.length;
+    const inStock = products.filter(p => p.status === 'available').length;
+    const outOfStock = products.filter(p => p.status === 'out_of_stock').length;
+    const totalRevenue = orders.reduce((s, o) => s + (o.total || 0), 0);
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+
+    document.getElementById('dashStats').innerHTML = `
+      <div class="a-stat"><div class="a-stat-label">Total Products</div><div class="a-stat-num">${totalProducts}</div><div class="a-stat-sub">${inStock} in stock</div></div>
+      <div class="a-stat"><div class="a-stat-label">Total Orders</div><div class="a-stat-num">${orders.length}</div><div class="a-stat-sub">${pendingOrders} pending</div></div>
+      <div class="a-stat"><div class="a-stat-label">Total Revenue</div><div class="a-stat-num">${fmtPrice(totalRevenue)}</div><div class="a-stat-sub">from confirmed orders</div></div>
+      <div class="a-stat"><div class="a-stat-label">Out of Stock</div><div class="a-stat-num" style="color:#dc2626">${outOfStock}</div><div class="a-stat-sub">need restocking</div></div>
+    `;
+
+    // Low stock alerts
+    const lowStock = products.filter(p => {
+      const total = (p.shopQty || 0) + (p.storageQty || 0);
+      return total <= (p.minStockAlert || 5) && p.status !== 'out_of_stock';
+    });
+    if (lowStock.length) {
+      document.getElementById('stockAlerts').innerHTML = `
+        <div style="background:#fef3c7;border:1px solid #f5a623;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+          <p style="font-weight:700;color:#b45309;margin-bottom:0.75rem">⚠️ Low Stock Alert (${lowStock.length} items)</p>
+          ${lowStock.map(p => `<p style="font-size:0.85rem;color:#92400e;padding:4px 0">${p.name} — ${(p.shopQty||0)+(p.storageQty||0)} units remaining (min: ${p.minStockAlert})</p>`).join('')}
+        </div>`;
+    }
+
+    // Recent orders
+    const recent = orders.slice(0, 8);
+    document.getElementById('recentOrdersBody').innerHTML = recent.length
+      ? recent.map(o => `<tr>
+          <td style="font-weight:600">${o.id}</td>
+          <td>${o.customer?.name || '—'}<br><span style="font-size:0.75rem;color:#888">${o.customer?.phone||''}</span></td>
+          <td style="font-weight:700">${fmtPrice(o.total)}</td>
+          <td><span class="pay-badge ${o.payment?.method||'cash'}" style="position:static;padding:4px 10px;font-size:0.75rem">${o.payment?.method?.toUpperCase()||'CASH'}</span></td>
+          <td><span class="order-badge order-${o.status||'pending'}">${o.status||'pending'}</span></td>
+          <td style="font-size:0.8rem;color:#888">${new Date(o.createdAt).toLocaleDateString()}</td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:#888;padding:2rem">No orders yet</td></tr>';
+
+    // Top products
+    const sorted = [...products].sort((a,b) => (b.soldCount||0) - (a.soldCount||0)).slice(0, 8);
+    document.getElementById('topProductsBody').innerHTML = sorted.map(p => `<tr>
+      <td style="font-weight:600">${p.name}</td>
+      <td>${p.brand}</td>
+      <td style="text-transform:capitalize">${p.category}</td>
+      <td>${p.soldCount || 0}</td>
+      <td style="font-weight:700">${fmtPrice((p.soldCount||0) * p.price)}</td>
+    </tr>`).join('');
+  }
+
+  init();
+</script>
+</body>
+</html>

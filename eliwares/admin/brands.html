@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brands – ELIWARES Admin</title>
+<link rel="stylesheet" href="../src/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#4fc3f7"/><path d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z" fill="#fff"/><rect x="17" y="17" width="7" height="5" rx="1" fill="#1a3c5e"/></svg>
+      ELIWARES Admin
+    </div>
+    <nav class="admin-nav">
+      <a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="products.html"><span class="nav-icon">📦</span> Products</a>
+      <a href="inventory.html"><span class="nav-icon">🏪</span> Inventory</a>
+      <a href="orders.html"><span class="nav-icon">🛒</span> Orders</a>
+      <a href="brands.html" class="active"><span class="nav-icon">🏷️</span> Brands</a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <a href="../index.html">← View Store</a><br><br>
+      <a href="#" onclick="doLogout()" style="color:rgba(255,100,100,0.7)">Log Out</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h2>Brands</h2>
+      <button class="btn-sm primary" onclick="openAddBrand()">+ Add Brand</button>
+    </div>
+    <div class="admin-content">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem" id="brandsGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD/EDIT BRAND MODAL -->
+<div class="admin-modal-overlay hidden" id="brandModalOverlay">
+  <div class="admin-modal" style="max-width:440px">
+    <div class="admin-modal-header">
+      <h3 id="brandModalTitle">Add Brand</h3>
+      <button onclick="closeBrandModal()" class="close-btn">✕</button>
+    </div>
+    <div class="admin-modal-body">
+      <input type="hidden" id="b_id">
+      <div class="form-group"><label>Brand Name *</label><input type="text" id="b_name" placeholder="e.g. CeramicPro"></div>
+      <div class="form-group"><label>Description</label><input type="text" id="b_desc" placeholder="e.g. Premium tiles & surfaces"></div>
+      <div class="form-group"><label>Country of Origin</label><input type="text" id="b_country" placeholder="e.g. Italy"></div>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-sm ghost" onclick="closeBrandModal()">Cancel</button>
+      <button class="btn-sm primary" onclick="saveBrand()">Save Brand</button>
+    </div>
+  </div>
+</div>
+
+<script src="../src/data.js"></script>
+<script>
+  const auth = DB.checkAuth();
+  if (!auth) window.location.href = 'login.html';
+  function doLogout() { DB.logout(); window.location.href = 'login.html'; }
+
+  function renderBrands() {
+    const brands = DB.getBrands();
+    const products = DB.getProducts();
+    document.getElementById('brandsGrid').innerHTML = brands.map(b => {
+      const prods = products.filter(p => p.brand === b.name);
+      const inStock = prods.filter(p => p.status === 'available').length;
+      const totalSold = prods.reduce((s,p) => s + (p.soldCount||0), 0);
+      return `
+      <div class="admin-table-wrap" style="padding:0">
+        <div style="padding:1.25rem;border-bottom:1px solid #e4e8ee;display:flex;align-items:center;gap:1rem">
+          <div style="width:48px;height:48px;border-radius:50%;background:#4fc3f7;color:#1a3c5e;font-weight:800;font-size:1.3rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${b.name[0]}</div>
+          <div style="flex:1">
+            <p style="font-weight:700;font-size:1rem">${b.name}</p>
+            <p style="font-size:0.8rem;color:#888">${b.description||'—'}</p>
+            <p style="font-size:0.75rem;color:#4fc3f7;font-weight:600">${b.country||''}</p>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid #e4e8ee">
+          <div style="padding:1rem;text-align:center;border-right:1px solid #e4e8ee">
+            <p style="font-size:1.4rem;font-weight:800;color:#1a3c5e">${prods.length}</p>
+            <p style="font-size:0.72rem;color:#888;font-weight:600">PRODUCTS</p>
+          </div>
+          <div style="padding:1rem;text-align:center;border-right:1px solid #e4e8ee">
+            <p style="font-size:1.4rem;font-weight:800;color:#16a34a">${inStock}</p>
+            <p style="font-size:0.72rem;color:#888;font-weight:600">IN STOCK</p>
+          </div>
+          <div style="padding:1rem;text-align:center">
+            <p style="font-size:1.4rem;font-weight:800;color:#1a3c5e">${totalSold}</p>
+            <p style="font-size:0.72rem;color:#888;font-weight:600">SOLD</p>
+          </div>
+        </div>
+        <div style="padding:0.75rem 1.25rem;display:flex;gap:0.5rem">
+          <button class="btn-sm primary" onclick="editBrand('${b.id}')">Edit</button>
+          <button class="btn-sm danger" onclick="deleteBrand('${b.id}')">Delete</button>
+          <a href="products.html" class="btn-sm ghost" style="text-decoration:none;display:inline-flex;align-items:center">View Products →</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function openAddBrand() {
+    document.getElementById('brandModalTitle').textContent = 'Add Brand';
+    document.getElementById('b_id').value = '';
+    ['b_name','b_desc','b_country'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('brandModalOverlay').classList.remove('hidden');
+  }
+
+  function editBrand(id) {
+    const b = DB.getBrands().find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('brandModalTitle').textContent = 'Edit Brand';
+    document.getElementById('b_id').value = b.id;
+    document.getElementById('b_name').value = b.name;
+    document.getElementById('b_desc').value = b.description || '';
+    document.getElementById('b_country').value = b.country || '';
+    document.getElementById('brandModalOverlay').classList.remove('hidden');
+  }
+
+  function closeBrandModal() { document.getElementById('brandModalOverlay').classList.add('hidden'); }
+
+  function saveBrand() {
+    const id = document.getElementById('b_id').value;
+    const name = document.getElementById('b_name').value.trim();
+    if (!name) { alert('Brand name is required.'); return; }
+    const brands = DB.getBrands();
+    if (id) {
+      const idx = brands.findIndex(b => b.id === id);
+      if (idx > -1) { brands[idx] = { ...brands[idx], name, description: document.getElementById('b_desc').value, country: document.getElementById('b_country').value }; }
+    } else {
+      brands.push({ id: 'B' + Date.now(), name, description: document.getElementById('b_desc').value, country: document.getElementById('b_country').value });
+    }
+    DB.saveBrands(brands);
+    closeBrandModal();
+    renderBrands();
+  }
+
+  function deleteBrand(id) {
+    if (!confirm('Delete this brand? Products with this brand will keep it as a label.')) return;
+    DB.saveBrands(DB.getBrands().filter(b => b.id !== id));
+    renderBrands();
+  }
+
+  renderBrands();
+</script>
+</body>
+</html>
