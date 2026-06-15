@@ -299,8 +299,8 @@ export function Storefront() {
               height={40}
               priority
             />
-            <span>ELIWARES</span>
           </a>
+          <span className="eliwares-text">ELIWARES</span>
           <nav className="nav-links">
             <a href="#products">Products</a>
             <a href="#brands">Brands</a>
