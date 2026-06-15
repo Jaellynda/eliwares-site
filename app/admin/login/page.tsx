@@ -11,7 +11,7 @@ export default function AdminLogin() {
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     // Simple credential check — replace with Firebase Auth in production
-    if (username === 'admin' && password === 'eliwares2025') {
+    if (username === 'eliwares_admin' && password === '#1EliNanta26') {
       sessionStorage.setItem('eliwares_admin', 'true');
       router.push('/admin/dashboard');
     } else {
