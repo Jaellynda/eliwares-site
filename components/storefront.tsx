@@ -227,6 +227,9 @@ export function Storefront() {
   const [currentBrand, setCurrentBrand] = useState('all');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutData, setCheckoutData] = useState({ name: '', phone: '', email: '', address: '' });
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const products = DB.getProducts();
@@ -285,6 +288,42 @@ export function Storefront() {
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+  const handlePesapalCheckout = async () => {
+    if (!checkoutData.name || !checkoutData.phone) {
+      alert('Please enter your name and phone number');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const res = await fetch('/api/pesapal/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: Date.now().toString(),
+          customer: {
+            name: checkoutData.name,
+            phone: checkoutData.phone,
+            email: checkoutData.email || undefined,
+          },
+          amount: Math.round(cartTotal),
+          items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price })),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        alert('Payment initiation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err: any) {
+      alert('Payment error: ' + err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <>
@@ -637,7 +676,11 @@ export function Storefront() {
             <b>{fmtPrice(cartTotal)}</b>
           </div>
           {cart.length > 0 && (
-            <button className="btn btn-primary" style={{ width: '100%' }}>
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%' }}
+              onClick={() => setShowCheckout(true)}
+            >
               Proceed to Checkout
             </button>
           )}
@@ -704,6 +747,78 @@ export function Storefront() {
                   {STATUS_LABELS[selectedProduct.status as keyof typeof STATUS_LABELS]?.label}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CHECKOUT MODAL */}
+      {showCheckout && (
+        <div className="modal-overlay" onClick={() => setShowCheckout(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Complete Your Order</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowCheckout(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <h4>Order Summary</h4>
+              <div style={{ background: 'var(--bg)', padding: '1rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span>{cart.length} item(s)</span>
+                  <strong>{fmtPrice(cartTotal)}</strong>
+                </div>
+              </div>
+
+              <h4>Delivery Address</h4>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={checkoutData.name}
+                onChange={(e) => setCheckoutData({ ...checkoutData, name: e.target.value })}
+              />
+              <input
+                type="tel"
+                placeholder="Phone (e.g. 0772123456)"
+                value={checkoutData.phone}
+                onChange={(e) => setCheckoutData({ ...checkoutData, phone: e.target.value })}
+              />
+              <input
+                type="email"
+                placeholder="Email (optional)"
+                value={checkoutData.email}
+                onChange={(e) => setCheckoutData({ ...checkoutData, email: e.target.value })}
+              />
+              <textarea
+                placeholder="Delivery Address"
+                value={checkoutData.address}
+                onChange={(e) => setCheckoutData({ ...checkoutData, address: e.target.value })}
+                rows={3}
+                style={{ resize: 'none', fontFamily: 'inherit' }}
+              />
+
+              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
+                <button
+                  className="btn btn-outline"
+                  style={{ flex: 1 }}
+                  onClick={() => setShowCheckout(false)}
+                  disabled={isProcessing}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  onClick={handlePesapalCheckout}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : 'Pay with Mobile Money'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
