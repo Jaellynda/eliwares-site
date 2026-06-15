@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 // DB Logic from data.js
 const ELIWARES_DB_KEY = 'eliwares_data';
@@ -165,12 +166,15 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const DEFAULT_BRANDS = [
-  { id: 'B001', name: 'CeramicPro', description: 'Premium tiles & surfaces', country: 'Italy' },
-  { id: 'B002', name: 'AquaLux', description: 'Taps, mixers & sanitaryware', country: 'Germany' },
-  { id: 'B003', name: 'SteelMaster', description: 'Stainless steel sinks', country: 'South Africa' },
-  { id: 'B004', name: 'FlowTech', description: 'Showers & thermostatics', country: 'UK' },
-  { id: 'B005', name: 'FixPro', description: 'Bathroom fixtures & accessories', country: 'China' },
-  { id: 'B006', name: 'LuxBath', description: 'Luxury bathtubs & vanities', country: 'Spain' }
+  { id: 'B001', name: 'Grohe', description: 'Luxury German taps & fittings', country: 'Germany', tier: 'luxury' },
+  { id: 'B002', name: 'Duravit', description: 'Premium luxury sanitaryware', country: 'Germany', tier: 'luxury' },
+  { id: 'B003', name: 'Himark', description: 'High-end bathroom fixtures', country: 'USA', tier: 'luxury' },
+  { id: 'B004', name: 'CeramicPro', description: 'Premium tiles & surfaces', country: 'Italy', tier: 'mid' },
+  { id: 'B005', name: 'AquaLux', description: 'Quality taps & mixers', country: 'Germany', tier: 'mid' },
+  { id: 'B006', name: 'SteelMaster', description: 'Stainless steel sinks', country: 'South Africa', tier: 'value' },
+  { id: 'B007', name: 'FlowTech', description: 'Showers & thermostatics', country: 'UK', tier: 'value' },
+  { id: 'B008', name: 'FixPro', description: 'Bathroom fixtures', country: 'China', tier: 'value' },
+  { id: 'B009', name: 'LuxBath', description: 'Luxury bathtubs', country: 'Spain', tier: 'luxury' }
 ];
 
 const STATUS_LABELS = {
@@ -288,14 +292,13 @@ export function Storefront() {
       <header className="navbar">
         <div className="nav-inner">
           <a href="/" className="logo">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#1a3c5e" />
-              <path
-                d="M8 22V14c0-3.3 2.7-6 6-6s6 2.7 6 6v1h-3v-1c0-1.7-1.3-3-3-3s-3 1.3-3 3v8H8z"
-                fill="#fff"
-              />
-              <rect x="17" y="17" width="7" height="5" rx="1" fill="#4fc3f7" />
-            </svg>
+            <Image 
+              src="/eliwares-logo.png" 
+              alt="ELIWARES" 
+              width={40} 
+              height={40}
+              priority
+            />
             <span>ELIWARES</span>
           </a>
           <nav className="nav-links">
@@ -531,15 +534,15 @@ export function Storefront() {
             <div className="contact-info">
               <div className="contact-item">
                 <span className="ci-label">📍 Address</span>
-                <span>Plot 14, Industrial Area, Kampala, Uganda</span>
+                <span>Kasangati - Kira Rd, Kira Town, Uganda</span>
               </div>
               <div className="contact-item">
                 <span className="ci-label">📞 Phone</span>
-                <span>+256 700 000000</span>
+                <span>0784 639456</span>
               </div>
               <div className="contact-item">
                 <span className="ci-label">📧 Email</span>
-                <span>info@eliwares.ug</span>
+                <span>info@eliwares.com</span>
               </div>
               <div className="contact-item">
                 <span className="ci-label">⏰ Hours</span>
