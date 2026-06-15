@@ -300,7 +300,7 @@ export function Storefront() {
               priority
             />
           </a>
-          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginLeft: '0.5rem' }}>ELIWARES</span>
+          <span className="eliwares-text">ELIWARES</span>
           <nav className="nav-links">
             <a href="#products">Products</a>
             <a href="#brands">Brands</a>
